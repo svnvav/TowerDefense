@@ -6,11 +6,9 @@ namespace Catlike.TowerDefense
     [CreateAssetMenu]
     public class GameTileContentFactory : ScriptableObject {
 
-        [SerializeField]
-        private GameTileContent destinationPrefab = default;
-
-        [SerializeField]
-        private GameTileContent emptyPrefab = default;
+        [SerializeField] private GameTileContent destinationPrefab = default;
+        [SerializeField] private GameTileContent emptyPrefab = default;
+        [SerializeField] private GameTileContent wallPrefab = default;
         
         private Scene contentScene;
         
@@ -18,6 +16,7 @@ namespace Catlike.TowerDefense
             switch (type) {
                 case GameTileContentType.Destination: return Get(destinationPrefab);
                 case GameTileContentType.Empty: return Get(emptyPrefab);
+                case GameTileContentType.Wall: return Get(wallPrefab);
             }
             Debug.Assert(false, "Unsupported type: " + type);
             return null;

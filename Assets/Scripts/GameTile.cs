@@ -48,7 +48,7 @@ namespace Catlike.TowerDefense
             }
             neighbor.distance = distance + 1;
             neighbor.nextOnPath = this;
-            return neighbor;
+            return neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
         }
         
         public void ClearPath () {
@@ -67,6 +67,10 @@ namespace Catlike.TowerDefense
                 nextOnPath == east ? eastRotation :
                 nextOnPath == south ? southRotation :
                 westRotation;
+        }
+        
+        public void HidePath () {
+            arrow.gameObject.SetActive(false);
         }
         
         public void BecomeDestination () {

@@ -16,6 +16,20 @@ namespace Catlike.TowerDefense
 
         private int distance;
         
+        private GameTileContent content;
+
+        public GameTileContent Content {
+            get => content;
+            set {
+                Debug.Assert(value != null, "Null assigned to content!");
+                if (content != null) {
+                    content.Recycle();
+                }
+                content = value;
+                content.transform.localPosition = transform.localPosition;
+            }
+        }
+        
         public bool HasPath => distance != int.MaxValue;
         
         public bool IsAlternative { get; set; }

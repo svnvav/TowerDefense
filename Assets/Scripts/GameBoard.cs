@@ -14,11 +14,14 @@ namespace Catlike.TowerDefense
         
         private GameTile[] tiles;
         
+        private GameTileContentFactory contentFactory;
+        
         private Queue<GameTile> searchFrontier = new Queue<GameTile>();
 
-        public void Initialize(Vector2Int size)
+        public void Initialize(Vector2Int size, GameTileContentFactory contentFactory)
         {
             this.size = size;
+            this.contentFactory = contentFactory;
             ground.localScale = new Vector3(size.x, size.y, 1f);
             
             Vector2 offset = new Vector2(
@@ -44,18 +47,55 @@ namespace Catlike.TowerDefense
                     if ((y & 1) == 0) {
                         tile.IsAlternative = !tile.IsAlternative;
                     }
+                    tile.Content = contentFactory.Get(GameTileContentType.Empty);
                 }
             }
             
-            FindPaths();
+            ToggleDestination(tiles[tiles.Length / 2]);
+        }
+
+        public GameTile GetTile (Ray ray) {
+
+            if (Physics.Raycast(ray, out RaycastHit hit)){
+                int x = (int)(hit.point.x + size.x * 0.5f);
+                int y = (int)(hit.point.z + size.y * 0.5f);
+                if (x >= 0 && x < size.x && y >= 0 && y < size.y) {
+                    return tiles[x + y * size.x];
+                }
+            }
+            return null;
         }
         
-        private void FindPaths () {
-            foreach (GameTile tile in tiles) {
-                tile.ClearPath();
+        public void ToggleDestination (GameTile tile) {
+            if (tile.Content.Type == GameTileContentType.Destination) {
+                tile.Content = contentFactory.Get(GameTileContentType.Empty);
+                if (!FindPaths()) {
+                    tile.Content =
+                        contentFactory.Get(GameTileContentType.Destination);
+                    FindPaths();
+                }
             }
-            tiles[tiles.Length / 2].BecomeDestination();
-            searchFrontier.Enqueue(tiles[tiles.Length / 2]);
+            else {
+                tile.Content = contentFactory.Get(GameTileContentType.Destination);
+                FindPaths();
+            }
+        }
+        
+        private bool FindPaths () {
+            foreach (GameTile tile in tiles) {
+                if (tile.Content.Type == GameTileContentType.Destination) 
+                {
+                    tile.BecomeDestination();
+                    searchFrontier.Enqueue(tile);
+                }
+                else
+                {
+                    tile.ClearPath();
+                }
+            }
+            if (searchFrontier.Count == 0) {
+                return false;
+            }
             
             while (searchFrontier.Count > 0) {
                 GameTile tile = searchFrontier.Dequeue();
@@ -79,6 +119,8 @@ namespace Catlike.TowerDefense
             foreach (GameTile tile in tiles) {
                 tile.ShowPath();
             }
+
+            return true;
         }
     }
 }

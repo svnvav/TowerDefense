@@ -53,6 +53,8 @@ namespace Catlike.TowerDefense
             }
             
             enemies.GameUpdate();
+            Physics.SyncTransforms();
+            board.GameUpdate();
         }
         
         private void SpawnEnemy () {

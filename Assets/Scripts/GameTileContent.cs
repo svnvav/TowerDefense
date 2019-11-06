@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Catlike.TowerDefense
 {
+    [SelectionBase]
     public class GameTileContent : MonoBehaviour
     {
         [SerializeField] private GameTileContentType type = default;
@@ -20,6 +21,8 @@ namespace Catlike.TowerDefense
                 originFactory = value;
             }
         }
+        
+        public virtual void GameUpdate () {}
         
         public void Recycle () {
             originFactory.Reclaim(this);

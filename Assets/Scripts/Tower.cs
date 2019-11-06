@@ -4,19 +4,46 @@ namespace Catlike.TowerDefense
 {
     public class Tower : GameTileContent
     {
-        private static Collider[] targetsBuffer = new Collider[1];
+        private static Collider[] targetsBuffer = new Collider[100];
         
         private const int enemyLayerMask = 1 << 9;
         
         [SerializeField, Range(1.5f, 10.5f)]
         private float targetingRange = 1.5f;
         
+        [SerializeField] private Transform turret = default, laserBeam = default;
+        
+        [SerializeField, Range(1f, 100f)] private float damagePerSecond = 10f;
+        
         private TargetPoint target;
 
+        private Vector3 laserBeamScale;
+
+        void Awake () {
+            laserBeamScale = laserBeam.localScale;
+        }
+        
         public override void GameUpdate () {
             if (TrackTarget() || AcquireTarget()) {
-                Debug.Log("Locked on target!");
+                Shoot();
             }
+            else {
+                laserBeam.localScale = Vector3.zero;
+            }
+        }
+        
+        private void Shoot () {
+            Vector3 point = target.Position;
+            turret.LookAt(point);
+            laserBeam.localRotation = turret.localRotation;
+            
+            float d = Vector3.Distance(turret.position, point);
+            laserBeamScale.z = d;
+            laserBeam.localScale = laserBeamScale;
+            laserBeam.localPosition =
+                turret.localPosition + 0.5f * d * laserBeam.forward;
+            
+            target.Enemy.ApplyDamage(damagePerSecond * Time.deltaTime);
         }
         
         private bool TrackTarget () {
@@ -43,7 +70,7 @@ namespace Catlike.TowerDefense
                 a,b, targetingRange, targetsBuffer, enemyLayerMask
             );
             if (hits > 0) {
-                target = targetsBuffer[0].GetComponent<TargetPoint>();
+                target = targetsBuffer[Random.Range(0, hits)].GetComponent<TargetPoint>();
                 Debug.Assert(target != null, "Targeted non-enemy!", targetsBuffer[0]);
                 return true;
             }
@@ -51,7 +78,7 @@ namespace Catlike.TowerDefense
             return false;
         }
 
-        private void OnDrawGizmos () {
+        private void OnDrawGizmosSelected () {
             Gizmos.color = Color.yellow;
             Vector3 position = transform.localPosition;
             position.y += 0.01f;

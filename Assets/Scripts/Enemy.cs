@@ -19,6 +19,7 @@ namespace Catlike.TowerDefense
         private float speed;
 
         public float Scale { get; private set; }
+        float Health { get; set; }
         
         public EnemyFactory OriginFactory
         {
@@ -36,10 +37,15 @@ namespace Catlike.TowerDefense
             model.localScale = new Vector3(scale, scale, scale);
             this.speed = speed;
             this.pathOffset = pathOffset;
+            Health = 100f * scale;
         }
         
         public bool GameUpdate()
         {
+            if (Health <= 0f) {
+                OriginFactory.Reclaim(this);
+                return false;
+            }
             progress += Time.deltaTime * progressFactor;
             while (progress >= 1f)
             {
@@ -76,6 +82,11 @@ namespace Catlike.TowerDefense
             progress = 0f;
 
             PrepareIntro();
+        }
+        
+        public void ApplyDamage (float damage) {
+            Debug.Assert(damage >= 0f, "Negative damage applied.");
+            Health -= damage;
         }
 
         private void PrepareNextState()

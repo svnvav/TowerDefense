@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Catlike.TowerDefense
 {
@@ -10,6 +11,12 @@ namespace Catlike.TowerDefense
         [SerializeField] private GameBoard board = default;
         
         [SerializeField] private GameTileContentFactory tileContentFactory = default;
+        
+        [SerializeField] private EnemyFactory enemyFactory = default;
+
+        [SerializeField, Range(0.1f, 10f)] private float spawnSpeed = 1f;
+
+        private float spawnProgress;
         
         private Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
 
@@ -36,6 +43,19 @@ namespace Catlike.TowerDefense
             if (Input.GetKeyDown(KeyCode.G)) {
                 board.ShowGrid = !board.ShowGrid;
             }
+            
+            spawnProgress += spawnSpeed * Time.deltaTime;
+            while (spawnProgress >= 1f) {
+                spawnProgress -= 1f;
+                SpawnEnemy();
+            }
+        }
+        
+        private void SpawnEnemy () {
+            GameTile spawnPoint =
+                board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
+            Enemy enemy = enemyFactory.Get();
+            enemy.SpawnOn(spawnPoint);
         }
 
         private void OnValidate()

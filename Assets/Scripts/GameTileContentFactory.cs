@@ -4,15 +4,13 @@ using UnityEngine.SceneManagement;
 namespace Catlike.TowerDefense
 {
     [CreateAssetMenu]
-    public class GameTileContentFactory : ScriptableObject {
+    public class GameTileContentFactory : GameObjectFactory {
 
         [SerializeField] private GameTileContent destinationPrefab = default;
         [SerializeField] private GameTileContent emptyPrefab = default;
         [SerializeField] private GameTileContent wallPrefab = default;
         [SerializeField] private GameTileContent spawnPointPrefab = default;
-        
-        private Scene contentScene;
-        
+
         public GameTileContent Get (GameTileContentType type) {
             switch (type) {
                 case GameTileContentType.Destination: return Get(destinationPrefab);
@@ -25,27 +23,11 @@ namespace Catlike.TowerDefense
         }
         
         private GameTileContent Get (GameTileContent prefab) {
-            GameTileContent instance = Instantiate(prefab);
+            GameTileContent instance = CreateGameObjectInstance(prefab);
             instance.OriginFactory = this;
-            MoveToFactoryScene(instance.gameObject);
             return instance;
         }
-        
-        private void MoveToFactoryScene (GameObject o) {
-            if (!contentScene.isLoaded) {
-                if (Application.isEditor) {
-                    contentScene = SceneManager.GetSceneByName(name);
-                    if (!contentScene.isLoaded) {
-                        contentScene = SceneManager.CreateScene(name);
-                    }
-                }
-                else {
-                    contentScene = SceneManager.CreateScene(name);
-                }
-            }
-            SceneManager.MoveGameObjectToScene(o, contentScene);
-        }
-        
+
         public void Reclaim (GameTileContent content) {
             Debug.Assert(content.OriginFactory == this, "Wrong factory reclaimed!");
             Destroy(content.gameObject);

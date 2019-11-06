@@ -32,23 +32,34 @@ namespace Catlike.TowerDefense
         
         public bool HasPath => distance != int.MaxValue;
         
+        public GameTile NextTileOnPath => nextOnPath;
+        
+        public Vector3 ExitPoint { get; private set; }
+        
         public bool IsAlternative { get; set; }
         
-        public GameTile GrowPathNorth () => GrowPathTo(north);
-
-        public GameTile GrowPathEast () => GrowPathTo(east);
-
-        public GameTile GrowPathSouth () => GrowPathTo(south);
-
-        public GameTile GrowPathWest () => GrowPathTo(west);
+        public Direction PathDirection { get; private set; }
         
-        private GameTile GrowPathTo (GameTile neighbor) {
-            if (!HasPath || neighbor == null || neighbor.HasPath) {
+        public GameTile GrowPathNorth () => GrowPathTo(north, Direction.South);
+
+        public GameTile GrowPathEast () => GrowPathTo(east, Direction.West);
+
+        public GameTile GrowPathSouth () => GrowPathTo(south, Direction.North);
+
+        public GameTile GrowPathWest () => GrowPathTo(west, Direction.East);
+        
+        private GameTile GrowPathTo (GameTile neighbor, Direction direction) {
+            Debug.Assert(HasPath, "No path!");
+            if (neighbor == null || neighbor.HasPath) {
                 return null;
             }
             neighbor.distance = distance + 1;
             neighbor.nextOnPath = this;
-            return neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
+            neighbor.ExitPoint =
+                neighbor.transform.localPosition + direction.GetHalfVector();
+            neighbor.PathDirection = direction;
+            return
+                neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
         }
         
         public void ClearPath () {
@@ -76,6 +87,7 @@ namespace Catlike.TowerDefense
         public void BecomeDestination () {
             distance = 0;
             nextOnPath = null;
+            ExitPoint = transform.localPosition;
         }
         
         public static void MakeEastWestNeighbors (GameTile east, GameTile west) {

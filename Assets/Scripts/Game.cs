@@ -18,6 +18,8 @@ namespace Catlike.TowerDefense
 
         private float spawnProgress;
         
+        private EnemyCollection enemies = new EnemyCollection();
+        
         private Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
 
         private void Awake()
@@ -49,6 +51,8 @@ namespace Catlike.TowerDefense
                 spawnProgress -= 1f;
                 SpawnEnemy();
             }
+            
+            enemies.GameUpdate();
         }
         
         private void SpawnEnemy () {
@@ -56,6 +60,7 @@ namespace Catlike.TowerDefense
                 board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
             Enemy enemy = enemyFactory.Get();
             enemy.SpawnOn(spawnPoint);
+            enemies.Add(enemy);
         }
 
         private void OnValidate()

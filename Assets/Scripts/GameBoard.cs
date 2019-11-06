@@ -15,6 +15,8 @@ namespace Catlike.TowerDefense
         private Vector2Int size;
 
         private GameTile[] tiles;
+        
+        List<GameTile> spawnPoints = new List<GameTile>();
 
         private GameTileContentFactory contentFactory;
 
@@ -22,6 +24,8 @@ namespace Catlike.TowerDefense
         
         private bool showGrid, showPaths;
 
+        public int SpawnPointCount => spawnPoints.Count;
+        
         public bool ShowGrid
         {
             get => showGrid;
@@ -100,6 +104,7 @@ namespace Catlike.TowerDefense
             }
 
             ToggleDestination(tiles[tiles.Length / 2]);
+            ToggleSpawnPoint(tiles[0]);
         }
 
         public GameTile GetTile(Ray ray)
@@ -115,6 +120,10 @@ namespace Catlike.TowerDefense
             }
 
             return null;
+        }
+        
+        public GameTile GetSpawnPoint (int index) {
+            return spawnPoints[index];
         }
 
         public void ToggleDestination(GameTile tile)
@@ -151,6 +160,19 @@ namespace Catlike.TowerDefense
                     tile.Content = contentFactory.Get(GameTileContentType.Empty);
                     FindPaths();
                 }
+            }
+        }
+        
+        public void ToggleSpawnPoint (GameTile tile) {
+            if (tile.Content.Type == GameTileContentType.SpawnPoint) {
+                if (spawnPoints.Count > 1) {
+                    spawnPoints.Remove(tile);
+                    tile.Content = contentFactory.Get(GameTileContentType.Empty);
+                }
+            }
+            else if (tile.Content.Type == GameTileContentType.Empty) {
+                tile.Content = contentFactory.Get(GameTileContentType.SpawnPoint);
+                spawnPoints.Add(tile);
             }
         }
 

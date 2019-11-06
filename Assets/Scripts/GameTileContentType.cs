@@ -4,6 +4,7 @@ namespace Catlike.TowerDefense
     {
         Empty, 
         Destination,
-        Wall
+        Wall,
+        SpawnPoint
     }
 }

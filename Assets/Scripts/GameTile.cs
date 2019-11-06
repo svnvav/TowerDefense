@@ -59,7 +59,7 @@ namespace Catlike.TowerDefense
                 neighbor.transform.localPosition + direction.GetHalfVector();
             neighbor.PathDirection = direction;
             return
-                neighbor.Content.Type != GameTileContentType.Wall ? neighbor : null;
+                neighbor.Content.BlocksPath ? null : neighbor;
         }
         
         public void ClearPath () {

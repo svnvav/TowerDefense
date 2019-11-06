@@ -10,6 +10,7 @@ namespace Catlike.TowerDefense
         [SerializeField] private GameTileContent emptyPrefab = default;
         [SerializeField] private GameTileContent wallPrefab = default;
         [SerializeField] private GameTileContent spawnPointPrefab = default;
+        [SerializeField] private Tower towerPrefab = default;
 
         public GameTileContent Get (GameTileContentType type) {
             switch (type) {
@@ -17,6 +18,7 @@ namespace Catlike.TowerDefense
                 case GameTileContentType.Empty: return Get(emptyPrefab);
                 case GameTileContentType.Wall: return Get(wallPrefab);
                 case GameTileContentType.SpawnPoint: return Get(spawnPointPrefab);
+                case GameTileContentType.Tower: return Get(towerPrefab);
             }
             Debug.Assert(false, "Unsupported type: " + type);
             return null;

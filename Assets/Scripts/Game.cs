@@ -88,7 +88,7 @@ namespace Catlike.TowerDefense
         private void SpawnEnemy () {
             GameTile spawnPoint =
                 board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
-            Enemy enemy = enemyFactory.Get();
+            Enemy enemy = enemyFactory.Get((EnemyType)(Random.Range(0, 3)));
             enemy.SpawnOn(spawnPoint);
             enemies.Add(enemy);
         }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Catlike.TowerDefense
@@ -8,6 +9,7 @@ namespace Catlike.TowerDefense
         [SerializeField] private Transform model = default;
 
         private EnemyFactory originFactory;
+        private EnemyAnimator animator;
 
         private GameTile tileFrom, tileTo;
         private Vector3 positionFrom, positionTo;
@@ -32,6 +34,13 @@ namespace Catlike.TowerDefense
             }
         }
 
+        private void Awake () {
+            animator.Configure(
+                model.GetChild(0).gameObject.AddComponent<Animator>(),
+                animationConfig
+            );
+        }
+        
         public void Initialize(float scale, float speed, float pathOffset, float health)
         {
             Scale = scale;
@@ -39,6 +48,7 @@ namespace Catlike.TowerDefense
             this.speed = speed;
             this.pathOffset = pathOffset;
             Health = health;
+            animator.Play(speed / scale);
         }
         
         public override bool GameUpdate()
@@ -92,9 +102,15 @@ namespace Catlike.TowerDefense
         }
 
         public override void Recycle () {
+            animator.Stop();
             OriginFactory.Reclaim(this);
         }
-        
+
+        private void OnDestroy()
+        {
+            animator.Destroy();
+        }
+
         private void PrepareNextState()
         {
             tileFrom = tileTo;

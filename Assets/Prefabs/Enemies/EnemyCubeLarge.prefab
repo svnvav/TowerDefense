@@ -116,7 +116,7 @@ GameObject:
   - component: {fileID: 1542641161454383919}
   - component: {fileID: 5317243652829499196}
   m_Layer: 9
-  m_Name: EnemyLarge
+  m_Name: EnemyCubeLarge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21bd0fc940714b9a97bace714e156586, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animationConfig: {fileID: 11400000, guid: 18e9ca542e98ae3408e22d3fcf75066f, type: 2}
   model: {fileID: 8487519361666345934}
 --- !u!1 &8564829539265973737
 GameObject:

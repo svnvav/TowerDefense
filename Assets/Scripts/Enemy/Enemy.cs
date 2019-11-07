@@ -4,6 +4,7 @@ namespace Catlike.TowerDefense
 {
     public class Enemy : GameBehavior
     {
+        [SerializeField] private EnemyAnimationConfig animationConfig = default;
         [SerializeField] private Transform model = default;
 
         private EnemyFactory originFactory;

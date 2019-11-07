@@ -13,7 +13,7 @@ namespace Catlike.TowerDefense
 
         public Vector3 Position => transform.position;
         
-        void Awake () {
+        private void Awake () {
             Enemy = transform.root.GetComponent<Enemy>();
             Debug.Assert(Enemy != null, "Target point without Enemy root!", this);
             Debug.Assert(
@@ -21,6 +21,8 @@ namespace Catlike.TowerDefense
                 "Target point without sphere collider!", this
             );
             Debug.Assert(gameObject.layer == 9, "Target point on wrong layer!", this);
+            
+            Enemy.TargetPointCollider = GetComponent<Collider>();
         }
         
         public static TargetPoint RandomBuffered =>

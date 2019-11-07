@@ -8,6 +8,8 @@ namespace Catlike.TowerDefense
         [SerializeField] private EnemyAnimationConfig animationConfig = default;
         [SerializeField] private Transform model = default;
 
+        private Collider targetPointCollider;
+        
         private EnemyFactory originFactory;
         private EnemyAnimator animator;
 
@@ -23,6 +25,8 @@ namespace Catlike.TowerDefense
 
         public float Scale { get; private set; }
         float Health { get; set; }
+        
+        public bool IsValidTarget => animator.CurrentClip == EnemyAnimator.Clip.Move;
 
         public EnemyFactory OriginFactory
         {
@@ -31,6 +35,14 @@ namespace Catlike.TowerDefense
             {
                 Debug.Assert(originFactory == null, "Redefined origin factory!");
                 originFactory = value;
+            }
+        }
+        
+        
+        public Collider TargetPointCollider {
+            set {
+                Debug.Assert(targetPointCollider == null, "Redefined collider!");
+                targetPointCollider = value;
             }
         }
 
@@ -50,6 +62,7 @@ namespace Catlike.TowerDefense
             this.pathOffset = pathOffset;
             Health = health;
             animator.PlayIntro();
+            targetPointCollider.enabled = false;
         }
 
         public override bool GameUpdate()
@@ -64,8 +77,9 @@ namespace Catlike.TowerDefense
                 }
 
                 animator.PlayMove(speed / Scale);
+                targetPointCollider.enabled = true;
             }
-            else if (animator.CurrentClip == EnemyAnimator.Clip.Outro)
+            else if (animator.CurrentClip >= EnemyAnimator.Clip.Outro)
             {
                 if (animator.IsDone)
                 {
@@ -78,8 +92,9 @@ namespace Catlike.TowerDefense
 
             if (Health <= 0f)
             {
-                Recycle();
-                return false;
+                animator.PlayDying();
+                targetPointCollider.enabled = false;
+                return true;
             }
 
             progress += Time.deltaTime * progressFactor;
@@ -89,6 +104,7 @@ namespace Catlike.TowerDefense
                 {
                     Game.EnemyReachedDestination();
                     animator.PlayOutro();
+                    targetPointCollider.enabled = false;
                     return true;
                 }
 

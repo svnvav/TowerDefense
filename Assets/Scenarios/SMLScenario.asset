@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a455f0897524efca21ae821a7cde58c, type: 3}
   m_Name: SMLScenario
   m_EditorClassIdentifier: 
+  cycles: 3
+  cycleSpeedUp: 0.5
   waves:
   - {fileID: 11400000, guid: 26cb5cfa085bfac4691dc142c2ea62e3, type: 2}
   - {fileID: 11400000, guid: 9ddfb76fd9984884c92d9752e551687e, type: 2}

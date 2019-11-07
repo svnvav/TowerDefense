@@ -7,7 +7,7 @@ namespace Catlike.TowerDefense
     [System.Serializable]
     public struct EnemyAnimator
     {
-        public enum Clip { Move, Intro, Outro }
+        public enum Clip { Move, Intro, Outro, Dying }
         
         private const float transitionSpeed = 5f;
         
@@ -27,7 +27,7 @@ namespace Catlike.TowerDefense
             graph = PlayableGraph.Create();
             graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
             
-            mixer = AnimationMixerPlayable.Create(graph, 3);
+            mixer = AnimationMixerPlayable.Create(graph, 4);
             
             var clip = AnimationClipPlayable.Create(graph, config.Move);
             clip.Pause();
@@ -41,6 +41,11 @@ namespace Catlike.TowerDefense
             clip.SetDuration(config.Outro.length);
             clip.Pause();
             mixer.ConnectInput((int)Clip.Outro, clip, 0);
+            
+            clip = AnimationClipPlayable.Create(graph, config.Dying);
+            clip.SetDuration(config.Dying.length);
+            clip.Pause();
+            mixer.ConnectInput((int)Clip.Dying, clip, 0);
             
             var output = AnimationPlayableOutput.Create(graph, "Enemy", animator);
             output.SetSourcePlayable(mixer);
@@ -75,6 +80,10 @@ namespace Catlike.TowerDefense
 
         public void PlayOutro () {
             BeginTransition(Clip.Outro);
+        }
+        
+        public void PlayDying () {
+            BeginTransition(Clip.Dying);
         }
         
         public void Stop () {

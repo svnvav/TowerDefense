@@ -13,24 +13,25 @@ namespace Catlike.TowerDefense
         [SerializeField] private GameBoard board = default;
         
         [SerializeField] private GameTileContentFactory tileContentFactory = default;
-        [SerializeField] private EnemyFactory enemyFactory = default;
+        
         [SerializeField] private WarFactory warFactory = default;
 
-        [SerializeField, Range(0.1f, 10f)] private float spawnSpeed = 1f;
-
-        private float spawnProgress;
-        
         private GameBehaviorCollection enemies = new GameBehaviorCollection();
         private GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
         
         private TowerType selectedTowerType;
         
         private Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
+        
+        [SerializeField] private GameScenario scenario = default;
+
+        private GameScenario.State activeScenario;
 
         private void Awake()
         {
             board.Initialize(boardSize, tileContentFactory);
             board.ShowGrid = true;
+            activeScenario = scenario.Begin();
         }
 
         void OnEnable () {
@@ -60,12 +61,8 @@ namespace Catlike.TowerDefense
             else if (Input.GetKeyDown(KeyCode.Alpha2)) {
                 selectedTowerType = TowerType.Mortar;
             }
-            
-            spawnProgress += spawnSpeed * Time.deltaTime;
-            while (spawnProgress >= 1f) {
-                spawnProgress -= 1f;
-                SpawnEnemy();
-            }
+
+            activeScenario.Progress();
             
             enemies.GameUpdate();
             Physics.SyncTransforms();
@@ -85,12 +82,12 @@ namespace Catlike.TowerDefense
             return explosion;
         }
         
-        private void SpawnEnemy () {
+        public static void SpawnEnemy (EnemyFactory factory, EnemyType type) {
             GameTile spawnPoint =
-                board.GetSpawnPoint(Random.Range(0, board.SpawnPointCount));
-            Enemy enemy = enemyFactory.Get((EnemyType)(Random.Range(0, 3)));
+                instance.board.GetSpawnPoint(Random.Range(0, instance.board.SpawnPointCount));
+            Enemy enemy = factory.Get(type);
             enemy.SpawnOn(spawnPoint);
-            enemies.Add(enemy);
+            instance.enemies.Add(enemy);
         }
 
         private void OnValidate()

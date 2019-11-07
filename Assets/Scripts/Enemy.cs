@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Catlike.TowerDefense
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : GameBehavior
     {
         [SerializeField] private Transform model = default;
 
@@ -40,7 +40,7 @@ namespace Catlike.TowerDefense
             Health = 100f * scale;
         }
         
-        public bool GameUpdate()
+        public override bool GameUpdate()
         {
             if (Health <= 0f) {
                 OriginFactory.Reclaim(this);

@@ -6,19 +6,22 @@ namespace Catlike.TowerDefense
 {
     public class Game : MonoBehaviour
     {
+        private static Game instance;
+        
         [SerializeField] private Vector2Int boardSize = new Vector2Int(11, 11);
         
         [SerializeField] private GameBoard board = default;
         
         [SerializeField] private GameTileContentFactory tileContentFactory = default;
-        
         [SerializeField] private EnemyFactory enemyFactory = default;
+        [SerializeField] private WarFactory warFactory = default;
 
         [SerializeField, Range(0.1f, 10f)] private float spawnSpeed = 1f;
 
         private float spawnProgress;
         
-        private EnemyCollection enemies = new EnemyCollection();
+        private GameBehaviorCollection enemies = new GameBehaviorCollection();
+        private GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
         
         private TowerType selectedTowerType;
         
@@ -30,6 +33,10 @@ namespace Catlike.TowerDefense
             board.ShowGrid = true;
         }
 
+        void OnEnable () {
+            instance = this;
+        }
+        
         private void Update()
         {
             if (Input.GetMouseButtonDown(0))
@@ -63,6 +70,19 @@ namespace Catlike.TowerDefense
             enemies.GameUpdate();
             Physics.SyncTransforms();
             board.GameUpdate();
+            nonEnemies.GameUpdate();
+        }
+        
+        public static Shell SpawnShell () {
+            Shell shell = instance.warFactory.Shell;
+            instance.nonEnemies.Add(shell);
+            return shell;
+        }
+        
+        public static Explosion SpawnExplosion () {
+            Explosion explosion = instance.warFactory.Explosion;
+            instance.nonEnemies.Add(explosion);
+            return explosion;
         }
         
         private void SpawnEnemy () {
@@ -82,7 +102,7 @@ namespace Catlike.TowerDefense
                 boardSize.y = 2;
             }
         }
-        
+
         void HandleTouch () {
             GameTile tile = board.GetTile(TouchRay);
             if (tile != null) {

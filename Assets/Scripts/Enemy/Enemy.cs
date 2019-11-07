@@ -43,7 +43,7 @@ namespace Catlike.TowerDefense
         public override bool GameUpdate()
         {
             if (Health <= 0f) {
-                OriginFactory.Reclaim(this);
+                Recycle();
                 return false;
             }
             progress += Time.deltaTime * progressFactor;
@@ -51,7 +51,8 @@ namespace Catlike.TowerDefense
             {
                 if (tileTo == null)
                 {
-                    OriginFactory.Reclaim(this);
+                    Game.EnemyReachedDestination();
+                    Recycle();
                     return false;
                 }
 
@@ -89,6 +90,10 @@ namespace Catlike.TowerDefense
             Health -= damage;
         }
 
+        public override void Recycle () {
+            OriginFactory.Reclaim(this);
+        }
+        
         private void PrepareNextState()
         {
             tileFrom = tileTo;

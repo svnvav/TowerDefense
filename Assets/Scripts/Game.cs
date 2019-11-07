@@ -8,6 +8,9 @@ namespace Catlike.TowerDefense
     {
         private static Game instance;
         
+        private const float pausedTimeScale = 0f;
+
+        
         [SerializeField] private Vector2Int boardSize = new Vector2Int(11, 11);
         
         [SerializeField] private GameBoard board = default;
@@ -15,6 +18,16 @@ namespace Catlike.TowerDefense
         [SerializeField] private GameTileContentFactory tileContentFactory = default;
         
         [SerializeField] private WarFactory warFactory = default;
+        
+        [SerializeField] private GameScenario scenario = default;
+
+        private GameScenario.State activeScenario;
+        
+        [SerializeField, Range(0, 100)] private int startingPlayerHealth = 10;
+        
+        private int playerHealth;
+        
+        [SerializeField, Range(1f, 10f)] private float playSpeed = 1f;
 
         private GameBehaviorCollection enemies = new GameBehaviorCollection();
         private GameBehaviorCollection nonEnemies = new GameBehaviorCollection();
@@ -22,20 +35,25 @@ namespace Catlike.TowerDefense
         private TowerType selectedTowerType;
         
         private Ray TouchRay => Camera.main.ScreenPointToRay(Input.mousePosition);
-        
-        [SerializeField] private GameScenario scenario = default;
-
-        private GameScenario.State activeScenario;
 
         private void Awake()
         {
             board.Initialize(boardSize, tileContentFactory);
             board.ShowGrid = true;
             activeScenario = scenario.Begin();
+            playerHealth = startingPlayerHealth;
         }
-
-        void OnEnable () {
+        
+        private void OnEnable () {
             instance = this;
+        }
+        
+        private void BeginNewGame () {
+            playerHealth = startingPlayerHealth;
+            enemies.Clear();
+            nonEnemies.Clear();
+            board.Clear();
+            activeScenario = scenario.Begin();
         }
         
         private void Update()
@@ -61,6 +79,29 @@ namespace Catlike.TowerDefense
             else if (Input.GetKeyDown(KeyCode.Alpha2)) {
                 selectedTowerType = TowerType.Mortar;
             }
+            
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                Time.timeScale =
+                    Time.timeScale > pausedTimeScale ? pausedTimeScale : playSpeed;
+            }
+            else if (Time.timeScale > pausedTimeScale) {
+                Time.timeScale = playSpeed;
+            }
+            
+            if (Input.GetKeyDown(KeyCode.B)) {
+                BeginNewGame();
+            }
+
+            if (playerHealth <= 0 && startingPlayerHealth > 0) {
+                Debug.Log("Defeat!");
+                BeginNewGame();
+            }
+            
+            if (!activeScenario.Progress() && enemies.IsEmpty) {
+                Debug.Log("Victory!");
+                BeginNewGame();
+                activeScenario.Progress();
+            }
 
             activeScenario.Progress();
             
@@ -68,6 +109,10 @@ namespace Catlike.TowerDefense
             Physics.SyncTransforms();
             board.GameUpdate();
             nonEnemies.GameUpdate();
+        }
+        
+        public static void EnemyReachedDestination () {
+            instance.playerHealth -= 1;
         }
         
         public static Shell SpawnShell () {

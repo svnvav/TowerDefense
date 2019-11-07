@@ -54,6 +54,8 @@ namespace Catlike.TowerDefense
 
         public override bool GameUpdate()
         {
+            animator.GameUpdate();
+            
             if (animator.CurrentClip == EnemyAnimator.Clip.Intro)
             {
                 if (!animator.IsDone)

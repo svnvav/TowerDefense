@@ -15,6 +15,11 @@ namespace Catlike.TowerDefense
         
         public bool IsDone => GetPlayable(CurrentClip).IsDone();
         
+#if UNITY_EDITOR
+        public bool IsValid => graph.IsValid();
+        private double clipTime;
+#endif
+        
         private PlayableGraph graph;
         private AnimationMixerPlayable mixer;
         
@@ -69,8 +74,46 @@ namespace Catlike.TowerDefense
             
             var output = AnimationPlayableOutput.Create(graph, "Enemy", animator);
             output.SetSourcePlayable(mixer);
+            
+#if UNITY_EDITOR
+            clipTime = GetPlayable(CurrentClip).GetTime();
+#endif
         }
 
+#if UNITY_EDITOR
+        public void RestoreAfterHotReload (
+            Animator animator, EnemyAnimationConfig config, float speed
+        ) {
+            Configure(animator, config);
+            GetPlayable(Clip.Move).SetSpeed(speed);
+            var clip = GetPlayable(CurrentClip);
+            clip.SetTime(clipTime);
+            clip.Play();
+            SetWeight(CurrentClip, 1f);
+            graph.Play();
+            if (CurrentClip == Clip.Intro && hasAppearClip) {
+                clip = GetPlayable(Clip.Appear);
+                clip.SetTime(clipTime);
+                clip.Play();
+                SetWeight(Clip.Appear, 1f);
+            }else if (CurrentClip >= Clip.Outro && hasDisappearClip) {
+                clip = GetPlayable(Clip.Disappear);
+                clip.Play();
+                double delay =
+                    GetPlayable(CurrentClip).GetDuration() -
+                    clip.GetDuration() -
+                    clipTime;
+                if (delay >= 0f) {
+                    clip.SetDelay(delay);
+                }
+                else {
+                    clip.SetTime(-delay);
+                }
+                SetWeight(Clip.Disappear, 1f);
+            }
+        }
+#endif
+        
         public void GameUpdate () {
             if (transitionProgress >= 0f) {
                 transitionProgress += Time.deltaTime * transitionSpeed;
@@ -151,5 +194,6 @@ namespace Catlike.TowerDefense
             mixer.SetInputWeight((int)clip, weight);
         }
 
+        
     }
 }

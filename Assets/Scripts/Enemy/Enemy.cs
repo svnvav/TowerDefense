@@ -76,7 +76,7 @@ namespace Catlike.TowerDefense
                     return true;
                 }
 
-                animator.PlayMove(speed / Scale);
+                animator.PlayMove(animationConfig.MoveAnimationSpeed * speed / Scale);
                 targetPointCollider.enabled = true;
             }
             else if (animator.CurrentClip >= EnemyAnimator.Clip.Outro)

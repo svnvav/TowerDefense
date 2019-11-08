@@ -7,7 +7,7 @@ namespace Catlike.TowerDefense
     [System.Serializable]
     public struct EnemyAnimator
     {
-        public enum Clip { Move, Intro, Outro, Dying }
+        public enum Clip { Move, Intro, Outro, Dying, Appear, Disappear }
         
         private const float transitionSpeed = 5f;
         
@@ -21,13 +21,19 @@ namespace Catlike.TowerDefense
         private Clip previousClip;
 
         private float transitionProgress;
+        
+        private bool hasAppearClip, hasDisappearClip;
 
         public void Configure(Animator animator, EnemyAnimationConfig config)
         {
+            hasAppearClip = config.Appear;
+            hasDisappearClip = config.Disappear;
+
             graph = PlayableGraph.Create();
             graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
-            
-            mixer = AnimationMixerPlayable.Create(graph, 4);
+            mixer = AnimationMixerPlayable.Create(
+                graph, hasAppearClip || hasDisappearClip ? 6 : 4
+            );
             
             var clip = AnimationClipPlayable.Create(graph, config.Move);
             clip.Pause();
@@ -46,6 +52,20 @@ namespace Catlike.TowerDefense
             clip.SetDuration(config.Dying.length);
             clip.Pause();
             mixer.ConnectInput((int)Clip.Dying, clip, 0);
+            
+            if (hasAppearClip) {
+                clip = AnimationClipPlayable.Create(graph, config.Appear);
+                clip.SetDuration(config.Appear.length);
+                clip.Pause();
+                mixer.ConnectInput((int)Clip.Appear, clip, 0);
+            }
+
+            if (hasDisappearClip) {
+                clip = AnimationClipPlayable.Create(graph, config.Disappear);
+                clip.SetDuration(config.Disappear.length);
+                clip.Pause();
+                mixer.ConnectInput((int)Clip.Disappear, clip, 0);
+            }
             
             var output = AnimationPlayableOutput.Create(graph, "Enemy", animator);
             output.SetSourcePlayable(mixer);
@@ -71,19 +91,34 @@ namespace Catlike.TowerDefense
             CurrentClip = Clip.Intro;
             graph.Play();
             transitionProgress = -1f;
+            
+            if (hasAppearClip) {
+                GetPlayable(Clip.Appear).Play();
+                SetWeight(Clip.Appear, 1f);
+            }
         }
 	
         public void PlayMove (float speed) {
             GetPlayable(Clip.Move).SetSpeed(speed);
             BeginTransition(Clip.Move);
+            
+            if (hasAppearClip) {
+                SetWeight(Clip.Appear, 0f);
+            }
         }
 
         public void PlayOutro () {
             BeginTransition(Clip.Outro);
+            if (hasDisappearClip) {
+                PlayDisappearFor(Clip.Outro);
+            }
         }
         
         public void PlayDying () {
             BeginTransition(Clip.Dying);
+            if (hasDisappearClip) {
+                PlayDisappearFor(Clip.Outro);
+            }
         }
         
         public void Stop () {
@@ -94,6 +129,13 @@ namespace Catlike.TowerDefense
             graph.Destroy();
         }
 	
+        private void PlayDisappearFor (Clip otherClip) {
+            var clip = GetPlayable(Clip.Disappear);
+            clip.Play();
+            clip.SetDelay(GetPlayable(otherClip).GetDuration() - clip.GetDuration());
+            SetWeight(Clip.Disappear, 1f);
+        }
+        
         private void BeginTransition (Clip nextClip) {
             previousClip = CurrentClip;
             CurrentClip = nextClip;
